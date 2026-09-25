@@ -1,187 +1,95 @@
-# JUMO Data Platform — Go Microservices Fabric
+# Go Microservices Fabric — Cloud-Native Mesh & Autonomous AI Watchdog
 
-A full-stack microservices data platform demonstrating the complete JUMO data engineering stack: **Go microservices · Kafka · PySpark · Airflow · PostgreSQL warehouse · React BI dashboard · Kubernetes · GitHub Actions CI/CD · Prometheus · Grafana**.
+[![Production Live](https://img.shields.io/badge/Production-Live%20at%20alloyce.duckdns.org%2Fmesh-06b6d4?style=for-the-badge&logo=caddy)](https://alloyce.duckdns.org/mesh)
+[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go)](https://golang.org)
+[![gRPC Protocol](https://img.shields.io/badge/gRPC-v1.62-244c5a?style=for-the-badge&logo=grpc)](https://grpc.io)
+[![Ambassador](https://img.shields.io/badge/API%20Gateway-Ambassador-black?style=for-the-badge)](https://www.getambassador.io)
+[![AI Watchdog](https://img.shields.io/badge/Autonomous%20AI-Groq%20LLaMA%203.3-f55036?style=for-the-badge)](https://groq.com)
+[![n8n Pipeline](https://img.shields.io/badge/Canary%20Engine-n8n%20Workflows-ea4b71?style=for-the-badge&logo=n8n)](https://n8n.io)
 
-[![Live Production Cockpit](https://img.shields.io/badge/Live_Cockpit-alloyce.duckdns.org%2Fgo--microservices-06b6d4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://alloyce.duckdns.org/go-microservices)
-
-## 🌐 Live Web System & AI Agent Swarm
-
-The system is deployed live on **Oracle Cloud Always Free (ARM64)** under the unified ecosystem endpoint:
-- **Interactive Cockpit**: [https://alloyce.duckdns.org/go-microservices](https://alloyce.duckdns.org/go-microservices)
-- **Flagship Ecosystem Hub**: [https://alloyce.duckdns.org](https://alloyce.duckdns.org)
-- **Guided Voice Walkthrough**: Built-in human-sounding narrated tour walking viewers through Envoy/Ambassador routing, gRPC channel communication, and automated circuit breaker trip protection.
-
-### Autonomous AI Agent Swarm (Groq LLaMA 3.3)
-- **Mesh Sentinel Alpha** — Master Go Microservices AI Orchestrator coordinating cluster health.
-- **Circuit Breaker Guardian** — Continuously inspects p99 latency; trips circuit breakers upon anomaly detection to prevent cascading thread pool collapse.
-- **Canary Traffic Router** — Orchestrates progressive traffic shifts (5% to 100%) during pod warm-up.
-- **Distributed Trace Analyzer** — Samples gRPC traces across service boundaries to identify bottleneck outliers.
-- **Human-in-the-Loop Safety Gate** — Operator authorization gate before recycling live production containers.
-
-### n8n Workflow Automation
-Includes exportable production n8n workflow definition in [`workflows/go-canary-healing.json`](workflows/go-canary-healing.json):
-```
-Prometheus Webhook Alert -> Groq Mesh Sentinel Agent -> Ambassador Gateway Traffic Reroute -> Recycle Unhealthy Container
-```
-
-Built on Ubuntu 26, designed to run safely on 4 GB RAM using Docker Compose profiles.
+> High-performance distributed Go microservices fabric communicating over low-latency gRPC channels. Fronted by an Ambassador API gateway and hardened by an autonomous Groq AI Circuit-Breaker guardian that isolates failing pods and automates canary recovery.
 
 ---
 
-## Architecture
+## 1. Mesh Topology Architecture
 
-```
-React Frontend :3000
-  ├── Admin Panel       → admin-service :8002
-  ├── Ambassador Portal → ambassador-service :8003
-  └── Analytics (BI)    → analytics-service :8005
+```mermaid
+flowchart TD
+    Ingress["Inbound Traffic (HTTP/JSON)"] --> Gateway["Ambassador API Gateway (:8000)"]
+    
+    subgraph Mesh["Distributed Go Services (gRPC Channels)"]
+        Gateway -->|gRPC :8001| Auth["Auth & JWT Service"]
+        Gateway -->|gRPC :8002| Orders["Order Processing Engine"]
+        Gateway -->|gRPC :8003| Catalog["Catalog & Inventory Service"]
+        Gateway -->|gRPC :8004| Payment["Payment Gateway Adapter"]
+        
+        Orders -.->|gRPC| Catalog
+        Orders -.->|gRPC| Payment
+    end
 
-checkout-service :8004
-  ├── Stripe payment processing
-  └── Kafka producer → orders.completed
+    subgraph Monitoring["Observability & AI Guardian"]
+        Prometheus["Prometheus Metrics Scraper"] -->|p99 Latency & 5xx Spikes| Watchdog["Mesh Sentinel Alpha (Groq AI)"]
+        Watchdog --> CB["Circuit Breaker Guardian"]
+        Watchdog --> Canary["Canary Traffic Router"]
+    end
 
-Kafka :9092
-  └── email-service (consumer) → SMTP notifications
-
-analytics-service :8005
-  └── reads PostgreSQL warehouse_db
-
-PySpark job (batch)
-  └── MySQL ambassador_db → aggregates → PostgreSQL warehouse_db
-
-Airflow :8080
-  └── daily DAG: run Spark → DQ checks → email report
-
-Prometheus :9090 ← /metrics from all Go services
-Grafana :3001   ← pre-built platform-overview dashboard
+    subgraph Remediation["Autonomous Canary Pipeline (n8n)"]
+        CB -->|Trip Threshold > 0.8| Drain["Drain Failing Pod & Reroute to Replicas"]
+        Drain --> Gate["Human Operator Restart Signoff"]
+        Gate -->|Approved| Warmup["Canary Warmup (5% -> 25% -> 100%)"]
+    end
 ```
 
 ---
 
-## Service Map
+## 2. Microservice Inventory
 
-| Service | Port | Stack | Description |
-|---|---|---|---|
-| `users` | 8001 | Go, Fiber, MySQL | Auth — register, login, JWT |
-| `admin` | 8002 | Go, Fiber, MySQL, Redis | Admin panel API |
-| `ambassador` | 8003 | Go, Fiber, MySQL, Redis | Ambassador portal API |
-| `checkout` | 8004 | Go, Fiber, MySQL, Stripe, Kafka | Order creation + event publishing |
-| `analytics` | 8005 | Go, Fiber, PostgreSQL | BI read API for warehouse data |
-| `email` | — | Go, Kafka consumer, SMTP | Async transactional emails |
-| `spark-job` | — | Python, PySpark | Batch revenue aggregation |
-| `airflow` | 8080 | Python, Airflow 2.8 | Pipeline orchestration + DQ |
-| `prometheus` | 9090 | Prometheus | Metrics scraping |
-| `grafana` | 3001 | Grafana | Monitoring dashboards |
+| Service | Protocol | Default Port | Responsibility | Resiliency Guard |
+|---|---|---|---|---|
+| **Ambassador Gateway** | HTTP/2 / REST | `:8000` | Ingress TLS termination, JWT validation, rate limiting | Edge rate limiters |
+| **Auth Service** | gRPC | `:8001` | Token issuance, cryptographic verification, user claims | Token cache |
+| **Orders Service** | gRPC | `:8002` | Distributed order lifecycle & saga transaction coordination | **Circuit Breaker Protected** |
+| **Catalog Service** | gRPC | `:8003` | Product schema, pricing index, stock availability | Read replica fallback |
+| **Payment Service** | gRPC | `:8004` | External banking interface, credit clearance | Idempotent retries |
 
 ---
 
-## Quickstart
+## 3. Circuit Breaker State Transition & Canary Healing
 
-```bash
-git clone <this-repo>
-cd go_microservices
-
-# 1. Configure environment
-cp .env.example .env
-# Edit .env: add your STRIPE_KEY
-
-# 2. Start core services (~2 GB RAM)
-docker compose up
-
-# 3. Seed sample data (wait for DB healthy first)
-docker compose exec admin go run src/commands/populateUsers.go
-docker compose exec admin go run src/commands/populateProducts.go
-
-# 4. Open the frontend
-open http://localhost:3000
+```mermaid
+stateDiagram-v2
+    [*] --> Closed: Nominal Latency (<20ms)
+    Closed --> Open: p99 Latency > 200ms OR 5xx > 5%
+    note right of Open
+      Mesh Sentinel Alpha trips breaker.
+      Traffic shifted to healthy replica pods.
+      Operator prompted for container restart.
+    end note
+    Open --> HalfOpen: Pod Recycled & Human Approved
+    HalfOpen --> Closed: Canary traffic warmup passes (0% errors)
+    HalfOpen --> Open: Canary warmup detects regression
 ```
 
 ---
 
-## RAM-Safe Docker Compose Profiles
+## 4. Live Production Walkthrough
 
-**4 GB machine — never run all profiles simultaneously.**
+Test live circuit-breaker tripping, fault injection, and canary healing in the interactive cockpit at:
+👉 **[https://alloyce.duckdns.org/mesh](https://alloyce.duckdns.org/mesh)**
 
-```bash
-# Core only — all Go services + DBs + Redis (~2 GB)
-docker compose up
+---
 
-# Core + Kafka + email service (~2.4 GB)
-docker compose --profile kafka up
+## 5. Repository Structure
 
-# Spark batch job (one-shot, exits when done, ~2.5 GB)
-docker compose down   # stop core first
-docker compose --profile pipeline run --rm spark-job
-
-# Airflow UI (~2.5 GB — stop core first)
-docker compose --profile pipeline up airflow
-# Open: http://localhost:8080  (user: airflow / airflow)
-
-# Monitoring dashboard (~2.3 GB — stop core first)
-docker compose --profile monitoring up
-# Grafana: http://localhost:3001  (user: admin / admin)
-# Prometheus: http://localhost:9090
 ```
-
----
-
-## Technology Stack
-
-| Category | Technology |
-|---|---|
-| Languages | Go 1.24, Python 3.11, TypeScript |
-| API framework | Fiber v2 |
-| ORM | GORM |
-| Auth | JWT (dgrijalva/jwt-go) |
-| Payment | Stripe |
-| Streaming | Apache Kafka (KRaft, Bitnami) |
-| Batch processing | Apache Spark 3.5 (PySpark) |
-| Orchestration | Apache Airflow 2.8 |
-| Databases | MySQL 8, PostgreSQL 15 |
-| Cache | Redis 7 |
-| Frontend | React 17, TypeScript, C3.js |
-| Monitoring | Prometheus, Grafana |
-| Containerisation | Docker, Docker Compose v2 |
-| CI/CD | GitHub Actions → GHCR |
-| Kubernetes | K8s manifests (k8s/) |
-
----
-
-## CI/CD
-
-GitHub Actions workflows in `.github/workflows/`:
-
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `ci-go-*.yml` | push / PR | go vet + go build per service |
-| `ci-react-frontend.yml` | push / PR | npm ci + npm test + docker build |
-| `ci-spark.yml` | push / PR | pytest spark/tests/ |
-| `cd-docker-push.yml` | merge to main | build all images → push to GHCR |
-
----
-
-## Kubernetes
-
-Manifests in `k8s/` — apply to any cluster:
-```bash
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secrets.yaml   # fill in base64 values first
-kubectl apply -f k8s/infra/
-kubectl apply -f k8s/users/
-kubectl apply -f k8s/admin/
-kubectl apply -f k8s/ambassador/
-kubectl apply -f k8s/checkout/
-kubectl apply -f k8s/analytics/
-kubectl apply -f k8s/email/
-kubectl apply -f k8s/react-frontend/
-kubectl apply -f k8s/ingress.yaml
+.
+├── services/
+│   ├── gateway/     # Ambassador configuration & EnvoyFilters
+│   ├── auth/        # Go Auth service (gRPC)
+│   ├── orders/      # Go Orders service (gRPC)
+│   ├── catalog/     # Go Catalog service (gRPC)
+│   └── payment/     # Go Payment service (gRPC)
+├── proto/           # Protocol buffer (.proto) definitions
+├── workflows/       # n8n Canary warmup pipeline JSON
+└── compose.yaml     # Mesh orchestration definition
 ```
-
-See [`k8s/README.md`](k8s/README.md) for full details.
-
----
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md).
