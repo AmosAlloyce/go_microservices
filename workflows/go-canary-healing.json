@@ -1,0 +1,62 @@
+{
+  "name": "Go Microservices Automated Canary Healing Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "prometheus-alert",
+        "responseMode": "onReceived"
+      },
+      "name": "Prometheus Webhook Alert",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "prompt": "Evaluate Prometheus p99 latency spikes and determine if Circuit Breaker should trip."
+      },
+      "name": "Groq Mesh Sentinel Agent",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:3002/api/go-microservices/reroute",
+        "method": "POST",
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "serviceId", "value": "={{$json.serviceId}}" },
+            { "name": "strategy", "value": "DRAIN_AND_FALLBACK" }
+          ]
+        }
+      },
+      "name": "Ambassador Gateway Traffic Reroute",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:3002/api/go-microservices/recycle",
+        "method": "POST",
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "podName", "value": "={{$json.podName}}" }
+          ]
+        }
+      },
+      "name": "Recycle Unhealthy Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [960, 300]
+    }
+  ],
+  "connections": {
+    "Prometheus Webhook Alert": { "main": [[{ "node": "Groq Mesh Sentinel Agent", "type": "main", "index": 0 }]] },
+    "Groq Mesh Sentinel Agent": { "main": [[{ "node": "Ambassador Gateway Traffic Reroute", "type": "main", "index": 0 }]] },
+    "Ambassador Gateway Traffic Reroute": { "main": [[{ "node": "Recycle Unhealthy Container", "type": "main", "index": 0 }]] }
+  }
+}

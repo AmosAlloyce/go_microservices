@@ -1,6 +1,28 @@
-# JUMO Data Platform
+# JUMO Data Platform — Go Microservices Fabric
 
 A full-stack microservices data platform demonstrating the complete JUMO data engineering stack: **Go microservices · Kafka · PySpark · Airflow · PostgreSQL warehouse · React BI dashboard · Kubernetes · GitHub Actions CI/CD · Prometheus · Grafana**.
+
+[![Live Production Cockpit](https://img.shields.io/badge/Live_Cockpit-alloyce.duckdns.org%2Fgo--microservices-06b6d4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://alloyce.duckdns.org/go-microservices)
+
+## 🌐 Live Web System & AI Agent Swarm
+
+The system is deployed live on **Oracle Cloud Always Free (ARM64)** under the unified ecosystem endpoint:
+- **Interactive Cockpit**: [https://alloyce.duckdns.org/go-microservices](https://alloyce.duckdns.org/go-microservices)
+- **Flagship Ecosystem Hub**: [https://alloyce.duckdns.org](https://alloyce.duckdns.org)
+- **Guided Voice Walkthrough**: Built-in human-sounding narrated tour walking viewers through Envoy/Ambassador routing, gRPC channel communication, and automated circuit breaker trip protection.
+
+### Autonomous AI Agent Swarm (Groq LLaMA 3.3)
+- **Mesh Sentinel Alpha** — Master Go Microservices AI Orchestrator coordinating cluster health.
+- **Circuit Breaker Guardian** — Continuously inspects p99 latency; trips circuit breakers upon anomaly detection to prevent cascading thread pool collapse.
+- **Canary Traffic Router** — Orchestrates progressive traffic shifts (5% to 100%) during pod warm-up.
+- **Distributed Trace Analyzer** — Samples gRPC traces across service boundaries to identify bottleneck outliers.
+- **Human-in-the-Loop Safety Gate** — Operator authorization gate before recycling live production containers.
+
+### n8n Workflow Automation
+Includes exportable production n8n workflow definition in [`workflows/go-canary-healing.json`](workflows/go-canary-healing.json):
+```
+Prometheus Webhook Alert -> Groq Mesh Sentinel Agent -> Ambassador Gateway Traffic Reroute -> Recycle Unhealthy Container
+```
 
 Built on Ubuntu 26, designed to run safely on 4 GB RAM using Docker Compose profiles.
 
